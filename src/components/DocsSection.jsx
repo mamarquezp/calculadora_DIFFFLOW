@@ -1,102 +1,129 @@
 import React from "react";
-import { BookOpen, Cpu } from "lucide-react";
+import { BookOpen, Cpu, Keyboard } from "lucide-react";
+
+/** Bloques del diagrama de arquitectura (x, y en el viewBox). */
+const NODES = [
+  { x: 20, y: 20, title: "1. Interfaz", lines: ["React + Tailwind", "Modo auto / manual", "Vista previa KaTeX"], tone: "a" },
+  { x: 215, y: 75, title: "2. Parser", lines: ["Valida sintaxis", "y', y'', dy/dx, dx, dy", "Mensajes de error"], tone: "n" },
+  { x: 410, y: 20, title: "3. Clasificador", lines: ["Un detector por método", "con su motivo", "Autoidentificación"], tone: "n" },
+  { x: 410, y: 130, title: "4. Solvers", lines: ["Un archivo por método", "Pasos programados", "CAS solo para ∫ y ∂"], tone: "n" },
+  { x: 605, y: 130, title: "5. Verificación", lines: ["Sustituye la solución", "en la EDO original"], tone: "s" },
+  { x: 20, y: 140, title: "6. Presentación", lines: ["Solución en LaTeX", "y_c / y_p separados", "Paso a paso"], tone: "a" },
+];
+
+const TONE = {
+  a: "var(--primary)",
+  n: "var(--muted)",
+  s: "var(--success)",
+};
+
+function Node({ x, y, title, lines, tone }) {
+  return (
+    <g>
+      <rect x={x} y={y} width="175" height="88" rx="14" style={{ fill: "var(--well)", stroke: TONE[tone] }} strokeWidth="1.5" />
+      <text x={x + 87.5} y={y + 26} textAnchor="middle" fontSize="13.5" fontWeight="700" style={{ fill: TONE[tone] }}>
+        {title}
+      </text>
+      {lines.map((l, i) => (
+        <text key={l} x={x + 87.5} y={y + 46 + i * 15} textAnchor="middle" fontSize="11" style={{ fill: "var(--muted)" }}>
+          {l}
+        </text>
+      ))}
+    </g>
+  );
+}
+
+const ARROWS = [
+  "M195 64 L211 100",
+  "M390 105 L406 75",
+  "M390 135 L406 165",
+  "M497 108 L497 126",
+  "M585 174 L601 174",
+  "M692 218 L692 242 L107 242 L107 232",
+];
+
+const SYNTAX = [
+  ["Primera derivada", "y'  ó  dy/dx"],
+  ["Segunda / tercera derivada", "y''   y'''"],
+  ["Forma diferencial", "(2*x*y)*dx + (x^2)*dy = 0"],
+  ["Multiplicación", "2*x*y   (siempre con *)"],
+  ["Potencias", "x^2   y^(1/2)"],
+  ["Funciones", "exp(x)  e^x  ln(x)  sin(x)  sen(x)  cos(x)"],
+];
+
+const GUIDE = [
+  ["Escribe la ecuación", "Usa la barra de símbolos si no recuerdas la notación. La vista previa confirma que la sintaxis es válida."],
+  ["Elige el modo", "Automático identifica el método y lo activa en el menú. Manual te deja elegirlo: el menú marca ✓ los compatibles y explica por qué los demás no aplican."],
+  ["Resuelve", "Presiona «Resolver paso a paso» o Enter. El cálculo corre en segundo plano; puedes cancelarlo."],
+  ["Revisa el procedimiento", "Mira la solución general, y_c e y_p, la verificación y cada paso. Usa «Revelar uno a uno» para explicarlo en clase."],
+];
 
 export default function DocsSection() {
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Diagrama de Bloques de Arquitectura */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
+    <div className="max-w-5xl mx-auto space-y-5 pb-6">
+      <section className="glass rounded-3xl p-5 sm:p-7">
+        <div className="flex items-center gap-2 mb-1">
           <Cpu className="w-5 h-5 text-primary" />
-          <h2 className="font-display text-lg font-bold text-on-surface">
-            Diagrama de Bloques • Arquitectura Modular DiffFlow EDO
-          </h2>
+          <h2 className="font-serif italic text-3xl">Arquitectura</h2>
         </div>
-        <p className="text-sm text-on-surface-variant mb-6">
-          Separación estricta entre la capa de presentación (React + KaTeX) y el motor simbólico propio (Parser, Clasificador y Solvers por método). El motor corre en un Web Worker, así la interfaz nunca se congela mientras calcula, y cada solución se verifica sustituyéndola en la EDO original.
+        <p className="text-sm text-muted mb-5 max-w-3xl leading-relaxed">
+          La interfaz está separada del motor matemático. El motor (bloques 2 a 5) corre en un Web Worker, así la página no se congela
+          mientras calcula. Nerdamer solo se usa para operaciones primitivas (derivar, integrar, sustituir); la clasificación y los pasos
+          de cada método están programados en <code className="font-mono text-ink">src/engine</code>.
         </p>
-
-        {/* Diagrama SVG limpio */}
-        <div className="bg-surface-container-low/60 border border-outline-variant rounded-xl p-4 overflow-x-auto">
-          <svg viewBox="0 0 820 220" className="w-full min-w-[680px] h-auto font-sans">
+        <div className="well rounded-2xl p-3 overflow-x-auto df-scroll">
+          <svg viewBox="0 0 800 252" className="w-full min-w-[680px] h-auto" role="img" aria-label="Diagrama de bloques de la arquitectura">
             <defs>
-              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 1 L 10 5 L 0 9 z" fill="#4f46e5" />
+              <marker id="df-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 1 L10 5 L0 9 z" style={{ fill: "var(--primary)" }} />
               </marker>
             </defs>
-
-            {/* Bloque 1: GUI */}
-            <rect x="20" y="55" width="160" height="110" rx="10" fill="#ffffff" stroke="#3525cd" strokeWidth="2" />
-            <text x="100" y="85" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#3525cd">1. Interfaz (GUI)</text>
-            <text x="100" y="106" textAnchor="middle" fontSize="11" fill="#464555">React + Tailwind</text>
-            <text x="100" y="124" textAnchor="middle" fontSize="11" fill="#464555">Modo Auto / Manual</text>
-            <text x="100" y="142" textAnchor="middle" fontSize="11" fill="#006c49">Preview KaTeX</text>
-
-            <line x1="180" y1="110" x2="225" y2="110" stroke="#4f46e5" strokeWidth="2" markerEnd="url(#arrow)" />
-
-            {/* Bloque 2: Parser */}
-            <rect x="230" y="55" width="160" height="110" rx="10" fill="#ffffff" stroke="#c7c4d8" strokeWidth="2" />
-            <text x="310" y="85" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#0b1c30">2. Parser & Validador</text>
-            <text x="310" y="106" textAnchor="middle" fontSize="11" fill="#464555">Normaliza y', y'', dy/dx</text>
-            <text x="310" y="124" textAnchor="middle" fontSize="11" fill="#464555">Extrae M(x,y) y N(x,y)</text>
-            <text x="310" y="142" textAnchor="middle" fontSize="11" fill="#ba1a1a">Control de Errores</text>
-
-            <line x1="390" y1="110" x2="435" y2="110" stroke="#4f46e5" strokeWidth="2" markerEnd="url(#arrow)" />
-
-            {/* Bloque 3: Clasificador */}
-            <rect x="440" y="25" width="165" height="75" rx="10" fill="#eff4ff" stroke="#3525cd" strokeWidth="1.5" />
-            <text x="522" y="50" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#3525cd">3A. Clasificador (+15%)</text>
-            <text x="522" y="68" textAnchor="middle" fontSize="10.5" fill="#464555">Detector por método con</text>
-            <text x="522" y="83" textAnchor="middle" fontSize="10.5" fill="#464555">motivo (manual y auto)</text>
-
-            {/* Bloque 3B: Solvers */}
-            <rect x="440" y="120" width="165" height="75" rx="10" fill="#ffffff" stroke="#006c49" strokeWidth="2" />
-            <text x="522" y="145" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#006c49">3B. Solvers por método</text>
-            <text x="522" y="163" textAnchor="middle" fontSize="10.5" fill="#464555">Sustituciones y pasos</text>
-            <text x="522" y="178" textAnchor="middle" fontSize="10.5" fill="#464555">(Usa CAS solo p/ ∫ y ∂)</text>
-
-            <line x1="522" y1="100" x2="522" y2="117" stroke="#4f46e5" strokeWidth="2" markerEnd="url(#arrow)" />
-            <line x1="605" y1="157" x2="645" y2="157" stroke="#4f46e5" strokeWidth="2" markerEnd="url(#arrow)" />
-
-            {/* Bloque 4: Trazabilidad */}
-            <rect x="650" y="55" width="150" height="110" rx="10" fill="#ffffff" stroke="#006c49" strokeWidth="2" />
-            <text x="725" y="85" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#006c49">4. Trazabilidad</text>
-            <text x="725" y="106" textAnchor="middle" fontSize="11" fill="#464555">Stepper paso a paso</text>
-            <text x="725" y="124" textAnchor="middle" fontSize="11" fill="#464555">Renderizado KaTeX</text>
-            <text x="725" y="142" textAnchor="middle" fontSize="11" fill="#3525cd">Verificación + copiar LaTeX</text>
+            <rect x="205" y="8" width="585" height="222" rx="18" fill="none" style={{ stroke: "var(--primary-2)" }} strokeDasharray="6 5" strokeWidth="1.2" />
+            <text x="215" y="220" fontSize="11" fontWeight="600" style={{ fill: "var(--primary-2)" }}>
+              Web Worker · motor matemático
+            </text>
+            {NODES.map((n) => (
+              <Node key={n.title} {...n} />
+            ))}
+            {ARROWS.map((d) => (
+              <path key={d} d={d} style={{ stroke: "var(--primary)" }} strokeWidth="2" fill="none" markerEnd="url(#df-arrow)" />
+            ))}
           </svg>
         </div>
-      </div>
+      </section>
 
-      {/* Manual Rápido de Usuario */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-4">
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-secondary" />
-          <h2 className="font-display text-lg font-bold text-on-surface">
-            Manual de Usuario Rápido
-          </h2>
+      <section className="glass rounded-3xl p-5 sm:p-7">
+        <div className="flex items-center gap-2 mb-4">
+          <BookOpen className="w-5 h-5 text-primary" />
+          <h2 className="font-serif italic text-3xl">Manual de usuario</h2>
         </div>
-        <div className="grid md:grid-cols-3 gap-4 text-sm">
-          <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
-            <h3 className="font-bold text-primary mb-1">1. Ingreso de Ecuación</h3>
-            <p className="text-on-surface-variant">
-              Usa <code className="font-mono text-xs bg-white px-1 rounded">y'</code> o <code className="font-mono text-xs bg-white px-1 rounded">dy/dx</code> para 1er orden, <code className="font-mono text-xs bg-white px-1 rounded">y''</code> y <code className="font-mono text-xs bg-white px-1 rounded">y'''</code> para orden superior, o la forma <code className="font-mono text-xs bg-white px-1 rounded">M*dx + N*dy = 0</code>. Indica multiplicaciones explícitas con <code className="font-mono text-xs bg-white px-1 rounded">*</code> (ej: <code className="font-mono text-xs">2*x*y</code>).
-            </p>
-          </div>
-          <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
-            <h3 className="font-bold text-primary mb-1">2. Modo Automático o Manual</h3>
-            <p className="text-on-surface-variant">
-              En <strong>Autoidentificación</strong>, el sistema detecta el método y activa la opción correspondiente. En <strong>Selección Manual</strong>, valida que la ecuación cumpla las reglas del método elegido.
-            </p>
-          </div>
-          <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
-            <h3 className="font-bold text-primary mb-1">3. Trazabilidad Didáctica</h3>
-            <p className="text-on-surface-variant">
-              Consulta cada etapa intermedia (derivadas parciales, factores integrantes μ(x), sustituciones u = y^(1−n) o raíces características) formateadas en LaTeX.
-            </p>
-          </div>
+        <ol className="grid sm:grid-cols-2 gap-3">
+          {GUIDE.map(([title, text], i) => (
+            <li key={title} className="bg-soft border border-line rounded-2xl p-4 flex gap-3">
+              <span className="btn-liquid w-8 h-8 rounded-lg shrink-0 flex items-center justify-center font-mono font-bold text-sm">{i + 1}</span>
+              <div>
+                <h3 className="font-bold">{title}</h3>
+                <p className="text-sm text-muted mt-1 leading-relaxed">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="glass rounded-3xl p-5 sm:p-7">
+        <div className="flex items-center gap-2 mb-4">
+          <Keyboard className="w-5 h-5 text-primary" />
+          <h2 className="font-serif italic text-3xl">Cómo escribir la ecuación</h2>
         </div>
-      </div>
+        <div className="well rounded-2xl divide-y divide-line">
+          {SYNTAX.map(([what, how]) => (
+            <div key={what} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-4 py-2.5">
+              <span className="text-sm font-semibold">{what}</span>
+              <code className="font-mono text-sm text-primary">{how}</code>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

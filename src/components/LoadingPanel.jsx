@@ -15,11 +15,11 @@ const MESSAGES = [
   "Casi listo…",
 ];
 
-const SYMBOLS = ["∫", "∂", "dy/dx", "λ", "e^x", "Σ", "y''", "μ"];
+const SYMBOLS = ["∫", "∂", "dy/dx", "λ", "eˣ", "Σ", "y″", "μ"];
 
 /**
- * Panel de carga animado: anillo giratorio con símbolos matemáticos que cambian,
- * mensajes rotativos, barra de progreso indeterminada y tiempo transcurrido.
+ * Panel de carga: anillos giratorios con símbolos matemáticos que cambian,
+ * mensajes rotativos, barra indeterminada y tiempo transcurrido.
  */
 export default function LoadingPanel({ onCancel }) {
   const [msgIdx, setMsgIdx] = useState(0);
@@ -39,39 +39,33 @@ export default function LoadingPanel({ onCancel }) {
   }, []);
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-xs flex flex-col items-center gap-5 relative overflow-hidden"
-    >
-      <div className="absolute top-0 left-0 right-0 h-1 bg-primary-fixed overflow-hidden">
-        <div className="h-full w-1/3 bg-gradient-to-r from-primary via-primary-container to-secondary df-indeterminate" />
+    <div role="status" aria-live="polite" className="glass rounded-3xl p-10 flex flex-col items-center gap-6 overflow-hidden df-fade-in">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-primary-soft overflow-hidden rounded-t-3xl">
+        <div className="h-full w-1/3 bg-gradient-to-r from-primary via-primary-2 to-primary df-indeterminate" />
       </div>
 
-      <div className="relative w-24 h-24 mt-2">
-        <div className="absolute inset-0 rounded-full border-4 border-primary-fixed" />
-        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary-container animate-spin" />
-        <div
-          className="absolute inset-3 rounded-full border-2 border-transparent border-b-secondary df-spin-reverse"
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span key={symIdx} className="font-math text-xl text-primary font-semibold df-pop">
+      <div className="relative w-28 h-28">
+        <div className="absolute inset-0 rounded-full border-4 border-primary-soft" />
+        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary-2 animate-spin" />
+        <div className="absolute inset-4 rounded-full border-2 border-transparent border-b-primary-2 border-l-primary df-spin-reverse" />
+        <div className="absolute inset-7 rounded-full well flex items-center justify-center">
+          <span key={symIdx} className="font-serif italic text-2xl text-primary df-pop">
             {SYMBOLS[symIdx]}
           </span>
         </div>
       </div>
 
-      <div className="text-center min-h-[3.25rem]">
-        <p key={msgIdx} className="font-display text-base font-semibold text-on-surface df-fade-in">
+      <div className="text-center min-h-[3.5rem]">
+        <p key={msgIdx} className="font-serif italic text-3xl df-fade-in">
           {MESSAGES[msgIdx]}
         </p>
-        <p className="text-xs text-on-surface-variant mt-1 flex items-center justify-center gap-1">
+        <p className="text-xs text-muted mt-2 flex items-center justify-center gap-2">
           <span className="inline-flex gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" />
           </span>
-          <span className="ml-2 font-mono">{elapsed.toFixed(1)} s</span>
+          <span className="font-mono">{elapsed.toFixed(1)} s</span>
         </p>
       </div>
 
@@ -79,7 +73,7 @@ export default function LoadingPanel({ onCancel }) {
         <button
           type="button"
           onClick={onCancel}
-          className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface-variant hover:text-error hover:border-error transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-soft border border-line text-muted hover:text-error hover:border-error transition-colors cursor-pointer"
         >
           <X className="w-3.5 h-3.5" /> Cancelar
         </button>

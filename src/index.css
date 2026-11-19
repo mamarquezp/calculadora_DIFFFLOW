@@ -1,35 +1,296 @@
 @import "tailwindcss";
 
-@theme {
-  --color-primary: #3525cd;
-  --color-primary-container: #4f46e5;
-  --color-primary-fixed: #e2dfff;
-  --color-primary-fixed-dim: #c3c0ff;
-  --color-secondary: #006c49;
-  --color-secondary-container: #6cf8bb;
-  --color-secondary-fixed: #6ffbbe;
-  --color-on-secondary-fixed: #002113;
-  --color-tertiary: #684000;
-  --color-tertiary-fixed: #ffddb8;
-  --color-background: #f8f9ff;
-  --color-surface: #f8f9ff;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #eff4ff;
-  --color-surface-container: #e5eeff;
-  --color-surface-container-high: #dce9ff;
-  --color-on-surface: #0b1c30;
-  --color-on-surface-variant: #464555;
-  --color-outline: #777587;
-  --color-outline-variant: #c7c4d8;
-  --color-error: #ba1a1a;
-  --color-error-container: #ffdad6;
+/* =====================================================================
+   DiffFlow EDO — Sistema visual "Liquid Glass"
+   Paneles de vidrio translúcido sobre un fondo de auroras y retícula de
+   cuaderno. Los colores se definen como variables para modo claro/oscuro.
+   ===================================================================== */
 
-  --font-sans: "Inter", sans-serif;
-  --font-display: "Plus Jakarta Sans", sans-serif;
-  --font-mono: "JetBrains Mono", monospace;
-  --font-math: "Source Serif 4", serif;
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+  --bg: #eceff8;
+  --grid: rgb(40 40 90 / 0.07);
+  --blob-1: #8b7bff;
+  --blob-2: #4fd8ec;
+  --blob-3: #ff9f8a;
+  --blob-opacity: 0.55;
+
+  --glass: rgb(255 255 255 / 0.5);
+  --glass-strong: rgb(255 255 255 / 0.72);
+  --glass-border: rgb(255 255 255 / 0.75);
+  --glass-edge: rgb(30 30 80 / 0.1);
+  --glass-shadow: 0 18px 50px -20px rgb(30 25 90 / 0.35);
+  --sheen: rgb(255 255 255 / 0.65);
+
+  --well: rgb(255 255 255 / 0.86);
+  --menu: rgb(250 250 255 / 0.96);
+  --soft: rgb(255 255 255 / 0.45);
+  --soft-2: rgb(91 71 245 / 0.08);
+  --line: rgb(40 40 90 / 0.14);
+
+  --text: #15142b;
+  --muted: #4b4a68;
+  --primary: #5b47f5;
+  --primary-2: #0891b2;
+  --primary-soft: rgb(91 71 245 / 0.12);
+  --on-primary: #ffffff;
+  --success: #0f7a55;
+  --success-soft: rgb(15 122 85 / 0.12);
+  --error: #c42b2b;
+  --error-soft: rgb(196 43 43 / 0.1);
+  --warn: #9a5b00;
+  --block-a: #5b47f5;
+  --block-b: #0e7490;
 }
-/* ---- Animaciones del panel de carga ---- */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #090a18;
+  --grid: rgb(200 200 255 / 0.05);
+  --blob-1: #5b47f5;
+  --blob-2: #0e9fb8;
+  --blob-3: #d14a76;
+  --blob-opacity: 0.38;
+
+  --glass: rgb(22 22 46 / 0.5);
+  --glass-strong: rgb(26 26 54 / 0.72);
+  --glass-border: rgb(255 255 255 / 0.12);
+  --glass-edge: rgb(0 0 0 / 0.3);
+  --glass-shadow: 0 18px 50px -20px rgb(0 0 0 / 0.7);
+  --sheen: rgb(255 255 255 / 0.14);
+
+  --well: rgb(8 8 24 / 0.62);
+  --menu: rgb(20 20 42 / 0.97);
+  --soft: rgb(255 255 255 / 0.05);
+  --soft-2: rgb(143 128 255 / 0.14);
+  --line: rgb(255 255 255 / 0.12);
+
+  --text: #ecebff;
+  --muted: #aeadcc;
+  --primary: #9a8cff;
+  --primary-2: #4fd8ec;
+  --primary-soft: rgb(154 140 255 / 0.16);
+  --on-primary: #0b0a1d;
+  --success: #4fdc9c;
+  --success-soft: rgb(79 220 156 / 0.14);
+  --error: #ff8080;
+  --error-soft: rgb(255 128 128 / 0.12);
+  --warn: #fbbf24;
+  --block-a: #a99dff;
+  --block-b: #5fdcef;
+}
+
+@theme inline {
+  /* Tokens semánticos (usados como bg-*, text-*, border-*) */
+  --color-primary: var(--primary);
+  --color-primary-2: var(--primary-2);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-error: var(--error);
+  --color-error-soft: var(--error-soft);
+  --color-warn: var(--warn);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-soft: var(--soft);
+  --color-soft-2: var(--soft-2);
+  --color-well: var(--well);
+  --color-block-a: var(--block-a);
+  --color-block-b: var(--block-b);
+
+  --font-sans: "Manrope", system-ui, sans-serif;
+  --font-display: "Manrope", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------- Fondo: auroras + retícula de cuaderno ---------------- */
+.df-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--bg);
+}
+.df-backdrop::after {
+  /* Retícula tipo papel cuadriculado */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse at 50% 30%, black 40%, transparent 85%);
+}
+.df-blob {
+  position: absolute;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 9999px;
+  opacity: var(--blob-opacity);
+  will-change: transform;
+}
+.df-blob-1 {
+  background: radial-gradient(circle at center, var(--blob-1), transparent 62%);
+  top: -22vmax;
+  left: -12vmax;
+  animation: df-drift-1 26s ease-in-out infinite alternate;
+}
+.df-blob-2 {
+  background: radial-gradient(circle at center, var(--blob-2), transparent 62%);
+  bottom: -26vmax;
+  right: -14vmax;
+  animation: df-drift-2 32s ease-in-out infinite alternate;
+}
+.df-blob-3 {
+  background: radial-gradient(circle at center, var(--blob-3), transparent 60%);
+  top: 30%;
+  left: 45%;
+  width: 38vmax;
+  height: 38vmax;
+  animation: df-drift-3 38s ease-in-out infinite alternate;
+}
+@keyframes df-drift-1 {
+  to { transform: translate(18vmax, 12vmax) scale(1.1); }
+}
+@keyframes df-drift-2 {
+  to { transform: translate(-16vmax, -10vmax) scale(1.15); }
+}
+@keyframes df-drift-3 {
+  to { transform: translate(-22vmax, -14vmax) scale(0.9); }
+}
+
+@layer components {
+/* ---------------- Vidrio ---------------- */
+.glass,
+.glass-strong {
+  position: relative;
+  background: var(--glass);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 0 var(--sheen),
+    0 0 0 1px var(--glass-edge),
+    var(--glass-shadow);
+}
+.glass-strong {
+  background: var(--glass-strong);
+}
+/* Brillo especular en el borde superior */
+.glass::before,
+.glass-strong::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(160deg, var(--sheen) 0%, transparent 28%);
+  opacity: 0.55;
+}
+.glass > *,
+.glass-strong > * {
+  position: relative;
+}
+
+/* Menús flotantes: casi opacos (un backdrop-filter anidado no desenfoca lo de afuera) */
+.menu-surface {
+  background: var(--menu);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 0 0 1px var(--glass-edge), 0 24px 60px -18px rgb(0 0 0 / 0.45);
+}
+
+/* Superficie opaca para fórmulas (máxima legibilidad) */
+.well {
+  background: var(--well);
+  border: 1px solid var(--line);
+}
+
+/* Botón principal "líquido" */
+.btn-liquid {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(120deg, #5b47f5 0%, #7a5cff 45%, #0891b2 100%);
+  background-size: 160% 100%;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 10px 30px -10px rgb(91 71 245 / 0.65);
+  transition: background-position 0.5s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.btn-liquid:hover {
+  background-position: 100% 0;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 14px 36px -10px rgb(8 145 178 / 0.6);
+}
+.btn-liquid::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  left: -60%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.6s ease;
+}
+.btn-liquid:hover::after {
+  left: 120%;
+}
+
+/* Anillo con gradiente para la solución final */
+.ring-gradient {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--well), var(--well)) padding-box,
+    linear-gradient(120deg, var(--primary), var(--primary-2), var(--blob-3)) border-box;
+}
+
+}
+
+/* Scroll fino para los paneles independientes */
+.df-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.df-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.df-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 9999px;
+}
+
+/* Fórmulas: KaTeX hereda el color del texto y hace scroll horizontal si no cabe */
+.katex {
+  font-size: 1.12em;
+}
+.katex-display {
+  margin: 0.25em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.15em 0;
+}
+
+/* ---------------- Animaciones ---------------- */
 @keyframes df-indeterminate {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(300%); }
@@ -43,14 +304,20 @@
   100% { transform: scale(1); }
 }
 @keyframes df-fade-in {
-  from { opacity: 0; transform: translateY(4px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .df-indeterminate { animation: df-indeterminate 1.4s ease-in-out infinite; }
 .df-spin-reverse { animation: df-spin-reverse 1.6s linear infinite; }
 .df-pop { animation: df-pop 0.4s ease-out; }
-.df-fade-in { animation: df-fade-in 0.35s ease-out; }
+.df-fade-in { animation: df-fade-in 0.4s ease-out both; }
 
 @media (prefers-reduced-motion: reduce) {
-  .df-indeterminate, .df-spin-reverse, .df-pop, .df-fade-in { animation: none; }
+  .df-blob,
+  .df-indeterminate,
+  .df-spin-reverse,
+  .df-pop,
+  .df-fade-in {
+    animation: none;
+  }
 }
