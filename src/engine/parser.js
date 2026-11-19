@@ -1,104 +1,151 @@
-import { CAS } from "./casHelper";
+import { CAS } from "./casHelper.js";
 
 /**
- * Normaliza la entrada del usuario a una estructura estándar manejable:
- * - Forma diferencial: { form: 'differential', M: '...', N: '...' }
- * - Forma derivada: { form: 'derivative', order: 1|2|3, rawNormalized: '...', lhs: '...', rhs: '...' }
+ * parser.js — Valida y normaliza la entrada del usuario.
+ *
+ * Notación aceptada:
+ *   y'  ó dy/dx      primera derivada
+ *   y'' ó d2y/dx2    segunda derivada
+ *   y'''             tercera derivada
+ *   M*dx + N*dy = 0  forma diferencial
+ *   '*' para multiplicar, '^' para potencias, exp(x) ó e^x, ln(x), sen/sin, cos, tan…
+ *
+ * Internamente las derivadas se representan con los símbolos Dy, Dyy, Dyyy.
+ *
+ * Devuelve:
+ *   { form: 'differential', order: 1, M, N, F, latexPreview }
+ *   { form: 'derivative',   order: 1|2|3, F, latexPreview }
+ * donde F es la expresión "lado izquierdo − lado derecho" (F = 0).
  */
-export function parseODE(rawInput) {
-  if (!rawInput || !rawInput.trim()) {
-    throw new Error("Por favor ingresa una ecuación diferencial.");
-  }
 
-  let input = rawInput.trim();
+export const DERIV_SYMBOLS = ["Dyyy", "Dyy", "Dy"];
+const ALLOWED_VARS = new Set(["x", "y", "Dy", "Dyy", "Dyyy", "dx", "dy"]);
 
-  if (!input.includes("=")) {
-    throw new Error("La ecuación debe contener un signo igual (=). Ejemplo: dy/dx + y = x^2");
-  }
+function normalize(raw) {
+  return raw
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[·×]/g, "*")
+    .replace(/[−–]/g, "-")
+    .replace(/’/g, "'")
+    .replace(/y\s*\(\s*x\s*\)/g, "y") // y(x) → y
+    .replace(/\bsen\s*\(/g, "sin(")
+    .replace(/\btg\s*\(/g, "tan(")
+    .replace(/\bln\s*\(/g, "log(")
+    .replace(/\be\s*\^\s*\(/g, "exp(")
+    .replace(/\be\s*\^\s*([a-zA-Z0-9_.]+)/g, "exp($1)")
+    .replace(/d\^?3y\s*\/\s*dx\^?3/gi, "Dyyy")
+    .replace(/d\^?2y\s*\/\s*dx\^?2/gi, "Dyy")
+    .replace(/dy\s*\/\s*dx/gi, "Dy")
+    .replace(/y\s*'''/g, "Dyyy")
+    .replace(/y\s*''/g, "Dyy")
+    .replace(/y\s*'/g, "Dy");
+}
 
-  // Reemplazos amigables de notación matemática
-  input = input
-    .replace(/e\^\(([^)]+)\)/g, "exp($1)")
-    .replace(/e\^([a-zA-Z0-9_]+)/g, "exp($1)")
-    .replace(/ln\(/g, "log(")
-    .replace(/y'''/g, "D3Y")
-    .replace(/d3y\/dx3/gi, "D3Y")
-    .replace(/y''/g, "D2Y")
-    .replace(/d2y\/dx2/gi, "D2Y")
-    .replace(/y'/g, "D1Y")
-    .replace(/dy\/dx/gi, "D1Y");
-
-  // Validar paréntesis balanceados
+function checkParentheses(input) {
   let balance = 0;
   for (const ch of input) {
     if (ch === "(") balance++;
     if (ch === ")") balance--;
-    if (balance < 0) throw new Error("Paréntesis de cierre ')' sin apertura correspondiente.");
+    if (balance < 0) throw new Error("Hay un paréntesis de cierre ')' sin su apertura '('.");
   }
-  if (balance !== 0) {
-    throw new Error("Tienes paréntesis sin cerrar en la ecuación.");
+  if (balance !== 0) throw new Error("Hay paréntesis sin cerrar en la ecuación.");
+}
+
+/** Devuelve la notación del usuario (y', y'') a partir de los símbolos internos. */
+function denormalize(s) {
+  return String(s).replace(/Dyyy/g, "y'''").replace(/Dyy/g, "y''").replace(/Dy/g, "y'");
+}
+
+function parseSide(side, label) {
+  if (!side.trim()) throw new Error(`El lado ${label} del '=' está vacío.`);
+  try {
+    return CAS.str(side);
+  } catch {
+    throw new Error(
+      `Error de sintaxis en el lado ${label}: "${denormalize(side.trim())}". Revisa que no falten operandos ni operadores y usa '*' para multiplicar (ej: 2*x*y).`
+    );
   }
+}
 
-  // Detectar si está en forma diferencial M(x,y)dx + N(x,y)dy = 0
-  const hasDx = /\bdx\b/i.test(input);
-  const hasDy = /\bdy\b/i.test(input);
-
-  if (hasDx || hasDy) {
-    if (!hasDx || !hasDy) {
-      throw new Error("En forma diferencial debes incluir tanto 'dx' como 'dy' (ej: (2*x*y)*dx + (x^2)*dy = 0).");
+function checkVariables(expr) {
+  const vars = CAS.variables(expr);
+  const unknown = vars.filter((v) => !ALLOWED_VARS.has(v));
+  if (unknown.length) {
+    const v = denormalize(unknown[0]);
+    let hint = "";
+    if (/^[xy']{2,}$/.test(v) && /x/.test(v) && /y/.test(v)) {
+      hint = ` ¿Quisiste decir ${v.replace(/x(?=y)/g, "x*").replace(/y(?=x)/g, "y*")}? Usa '*' para multiplicar.`;
+    } else if (/^[a-z]+\(?$/i.test(v) && v.length > 1) {
+      hint = " Si es una función, escríbela con paréntesis, p. ej. sin(x), exp(x), ln(x).";
     }
-    const [lhs, rhs] = input.split("=");
-    // Mover todo a la izquierda: (lhs) - (rhs) = 0
-    const fullExpr = `(${lhs}) - (${rhs})`;
-    // Extraer M como coeficiente de dx y N como coeficiente de dy
-    // Truco algebraico limpio: derivar parcialmente respecto a dx y dy tratándolos como símbolos
-    const M = CAS.simplify(CAS.diff(fullExpr, "dx"));
-    const N = CAS.simplify(CAS.diff(fullExpr, "dy"));
+    throw new Error(
+      `Símbolo no reconocido: "${v}". Solo se admiten x (variable independiente), y (dependiente) y sus derivadas.${hint}`
+    );
+  }
+}
 
-    if (M === "0" && N === "0") {
-      throw new Error("No se pudieron identificar los términos M(x,y)dx y N(x,y)dy. Verifica usar '*' para multiplicar (ej: (x+y)*dx).");
+/** Vista previa LaTeX respetando el orden escrito por el usuario. */
+function previewTeX(lhs, rhs) {
+  const conv = (s) =>
+    CAS.rawTeX(s)
+      .replace(/\bDyyy\b/g, "y'''")
+      .replace(/\bDyy\b/g, "y''")
+      .replace(/\bDy\b/g, "y'")
+      .replace(/\bdx\b/g, "\\,dx")
+      .replace(/\bdy\b/g, "\\,dy");
+  return `${conv(lhs)} = ${conv(rhs)}`;
+}
+
+export function parseODE(rawInput) {
+  if (!rawInput || !rawInput.trim()) {
+    throw new Error("Ingresa una ecuación diferencial.");
+  }
+  const input = normalize(rawInput);
+  checkParentheses(input);
+
+  const sides = input.split("=");
+  if (sides.length !== 2) {
+    throw new Error(
+      sides.length === 1
+        ? "La ecuación debe contener un signo igual (=). Ejemplo: y' + y = x^2"
+        : "La ecuación solo debe tener un signo igual (=)."
+    );
+  }
+  const [lhsRaw, rhsRaw] = sides;
+  const lhs = parseSide(lhsRaw, "izquierdo");
+  const rhs = parseSide(rhsRaw, "derecho");
+  const F = CAS.expand(`(${lhs}) - (${rhs})`);
+  checkVariables(F);
+
+  const vars = new Set(CAS.variables(F));
+  const latexPreview = previewTeX(lhsRaw, rhsRaw);
+
+  // ----- Forma diferencial: M(x,y)dx + N(x,y)dy = 0 -----
+  if (vars.has("dx") || vars.has("dy")) {
+    if (!vars.has("dx") || !vars.has("dy")) {
+      throw new Error("En forma diferencial debes incluir 'dx' y 'dy'. Ej: (2*x*y)*dx + (x^2)*dy = 0");
     }
-
-    return {
-      form: "differential",
-      order: 1,
-      M,
-      N,
-      raw: rawInput,
-      latexPreview: `\\left(${CAS.toTeX(M)}\\right)dx + \\left(${CAS.toTeX(N)}\\right)dy = 0`,
-    };
+    if (vars.has("Dy") || vars.has("Dyy") || vars.has("Dyyy")) {
+      throw new Error("No mezcles la forma diferencial (dx, dy) con y' o dy/dx.");
+    }
+    const M = CAS.simplify(CAS.diff(F, "dx"));
+    const N = CAS.simplify(CAS.diff(F, "dy"));
+    const rest = CAS.sub(F, { dx: 0, dy: 0 });
+    const linear = CAS.equal(F, `(${M})*dx + (${N})*dy`, ["x", "y", "dx", "dy"]);
+    if (!linear || !CAS.isZero(rest, ["x", "y"])) {
+      throw new Error(
+        "La forma diferencial debe ser M(x,y)*dx + N(x,y)*dy = 0 (cada término multiplicado por dx o por dy)."
+      );
+    }
+    if (CAS.isZero(N)) throw new Error("El coeficiente N(x,y) de dy no puede ser 0.");
+    return { form: "differential", order: 1, M, N, F, raw: rawInput, latexPreview };
   }
 
-  // Forma con derivadas explícitas (D1Y, D2Y, D3Y)
-  let order = 0;
-  if (input.includes("D3Y")) order = 3;
-  else if (input.includes("D2Y")) order = 2;
-  else if (input.includes("D1Y")) order = 1;
-
+  // ----- Forma con derivadas -----
+  const order = vars.has("Dyyy") ? 3 : vars.has("Dyy") ? 2 : vars.has("Dy") ? 1 : 0;
   if (order === 0) {
     throw new Error("No se detectó ninguna derivada. Usa y', y'', y''' o dy/dx.");
   }
-
-  const parts = input.split("=");
-  if (parts.length !== 2 || !parts[0].trim() || !parts[1].trim()) {
-    throw new Error("Formato de igualdad inválido. Asegúrate de tener expresiones a ambos lados del '='.");
-  }
-
-  const exprZero = `(${parts[0]}) - (${parts[1]})`;
-
-  // Construir vista previa LaTeX limpia
-  const latexPreview = rawInput
-    .replace(/d2y\/dx2/gi, "\\frac{d^2y}{dx^2}")
-    .replace(/dy\/dx/gi, "\\frac{dy}{dx}")
-    .replace(/\*/g, " \\cdot ");
-
-  return {
-    form: "derivative",
-    order,
-    lhs: parts[0].trim(),
-    rhs: parts[1].trim(),
-    exprZero,
-    raw: rawInput,
-    latexPreview,
-  };
+  return { form: "derivative", order, F, raw: rawInput, latexPreview };
 }

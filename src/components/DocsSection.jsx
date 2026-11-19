@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, Cpu, Layers, CheckCircle2 } from "lucide-react";
+import { BookOpen, Cpu } from "lucide-react";
 
 export default function DocsSection() {
   return (
@@ -13,7 +13,7 @@ export default function DocsSection() {
           </h2>
         </div>
         <p className="text-sm text-on-surface-variant mb-6">
-          Separación estricta entre la capa de presentación (React + KaTeX) y el motor simbólico propio (Parser, Clasificador Heurístico y Solvers por método)[cite: 3, 5, 8, 9].
+          Separación estricta entre la capa de presentación (React + KaTeX) y el motor simbólico propio (Parser, Clasificador y Solvers por método). El motor corre en un Web Worker, así la interfaz nunca se congela mientras calcula, y cada solución se verifica sustituyéndola en la EDO original.
         </p>
 
         {/* Diagrama SVG limpio */}
@@ -46,12 +46,12 @@ export default function DocsSection() {
             {/* Bloque 3: Clasificador */}
             <rect x="440" y="25" width="165" height="75" rx="10" fill="#eff4ff" stroke="#3525cd" strokeWidth="1.5" />
             <text x="522" y="50" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#3525cd">3A. Clasificador (+15%)</text>
-            <text x="522" y="68" textAnchor="middle" fontSize="10.5" fill="#464555">Evalúa orden, exactitud,</text>
-            <text x="522" y="83" textAnchor="middle" fontSize="10.5" fill="#464555">homogeneidad y Bernoulli</text>
+            <text x="522" y="68" textAnchor="middle" fontSize="10.5" fill="#464555">Detector por método con</text>
+            <text x="522" y="83" textAnchor="middle" fontSize="10.5" fill="#464555">motivo (manual y auto)</text>
 
             {/* Bloque 3B: Solvers */}
             <rect x="440" y="120" width="165" height="75" rx="10" fill="#ffffff" stroke="#006c49" strokeWidth="2" />
-            <text x="522" y="145" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#006c49">3B. Motor 9 Métodos</text>
+            <text x="522" y="145" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#006c49">3B. Solvers por método</text>
             <text x="522" y="163" textAnchor="middle" fontSize="10.5" fill="#464555">Sustituciones y pasos</text>
             <text x="522" y="178" textAnchor="middle" fontSize="10.5" fill="#464555">(Usa CAS solo p/ ∫ y ∂)</text>
 
@@ -63,7 +63,7 @@ export default function DocsSection() {
             <text x="725" y="85" textAnchor="middle" fontSize="13" fontWeight="bold" fill="#006c49">4. Trazabilidad</text>
             <text x="725" y="106" textAnchor="middle" fontSize="11" fill="#464555">Stepper paso a paso</text>
             <text x="725" y="124" textAnchor="middle" fontSize="11" fill="#464555">Renderizado KaTeX</text>
-            <text x="725" y="142" textAnchor="middle" fontSize="11" fill="#3525cd">Exportar LaTeX / SymPy</text>
+            <text x="725" y="142" textAnchor="middle" fontSize="11" fill="#3525cd">Verificación + copiar LaTeX</text>
           </svg>
         </div>
       </div>
@@ -80,19 +80,19 @@ export default function DocsSection() {
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
             <h3 className="font-bold text-primary mb-1">1. Ingreso de Ecuación</h3>
             <p className="text-on-surface-variant">
-              Usa <code className="font-mono text-xs bg-white px-1 rounded">y'</code> o <code className="font-mono text-xs bg-white px-1 rounded">dy/dx</code> para 1er orden, y <code className="font-mono text-xs bg-white px-1 rounded">y''</code> para 2do orden. Indica multiplicaciones explícitas con <code className="font-mono text-xs bg-white px-1 rounded">*</code> (ej: <code className="font-mono text-xs">2*x*y</code>)[cite: 3, 7].
+              Usa <code className="font-mono text-xs bg-white px-1 rounded">y'</code> o <code className="font-mono text-xs bg-white px-1 rounded">dy/dx</code> para 1er orden, <code className="font-mono text-xs bg-white px-1 rounded">y''</code> y <code className="font-mono text-xs bg-white px-1 rounded">y'''</code> para orden superior, o la forma <code className="font-mono text-xs bg-white px-1 rounded">M*dx + N*dy = 0</code>. Indica multiplicaciones explícitas con <code className="font-mono text-xs bg-white px-1 rounded">*</code> (ej: <code className="font-mono text-xs">2*x*y</code>).
             </p>
           </div>
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
             <h3 className="font-bold text-primary mb-1">2. Modo Automático o Manual</h3>
             <p className="text-on-surface-variant">
-              En <strong>Autoidentificación</strong>, el sistema detecta el método y activa la opción correspondiente. En <strong>Selección Manual</strong>, valida que la ecuación cumpla las reglas del método elegido[cite: 3, 7].
+              En <strong>Autoidentificación</strong>, el sistema detecta el método y activa la opción correspondiente. En <strong>Selección Manual</strong>, valida que la ecuación cumpla las reglas del método elegido.
             </p>
           </div>
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
             <h3 className="font-bold text-primary mb-1">3. Trazabilidad Didáctica</h3>
             <p className="text-on-surface-variant">
-              Consulta cada etapa intermedia (derivadas parciales, factores integrantes $\mu(x)$, sustituciones $u=y^{1-n}$ o raíces características) formateadas en LaTeX[cite: 2, 3, 7, 8].
+              Consulta cada etapa intermedia (derivadas parciales, factores integrantes μ(x), sustituciones u = y^(1−n) o raíces características) formateadas en LaTeX.
             </p>
           </div>
         </div>
