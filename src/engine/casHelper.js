@@ -1,7 +1,4 @@
 import nerdamer from "nerdamer";
-import "nerdamer/Algebra";
-import "nerdamer/Calculus";
-import "nerdamer/Solve";
 
 /**
  * Helper simbólico atómico.
